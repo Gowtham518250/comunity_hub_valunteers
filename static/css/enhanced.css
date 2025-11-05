@@ -1,0 +1,221 @@
+/* Enhanced Visual Styles for CommunityHub Pro */
+
+:root {
+    /* Color System */
+    --primary-hue: 0;
+    --secondary-hue: 174;
+    --accent-hue: 45;
+    
+    --primary: hsl(var(--primary-hue), 83%, 71%);
+    --primary-dark: hsl(var(--primary-hue), 100%, 66%);
+    --secondary: hsl(var(--secondary-hue), 60%, 55%);
+    --accent: hsl(var(--accent-hue), 100%, 70%);
+    
+    /* Enhanced Effects */
+    --blur-light: blur(8px);
+    --blur-heavy: blur(20px);
+    --glow-strength: 0 0 20px;
+    --depth-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.3);
+    
+    /* Animations */
+    --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-smooth: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bounce: 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+/* Loading Screen */
+.loading-screen {
+    position: fixed;
+    inset: 0;
+    background: linear-gradient(-45deg, 
+        hsl(var(--primary-hue), 83%, 71%),
+        hsl(var(--secondary-hue), 60%, 55%),
+        hsl(var(--accent-hue), 100%, 70%));
+    background-size: 400% 400%;
+    animation: gradient 15s ease infinite;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+.loader {
+    width: 80px;
+    height: 80px;
+    border: 3px solid rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    border-top-color: #fff;
+    animation: spin 1s ease infinite;
+}
+
+/* Enhanced Cards */
+.enhanced-card {
+    background: linear-gradient(135deg,
+        rgba(255, 255, 255, 0.1),
+        rgba(255, 255, 255, 0.05));
+    backdrop-filter: var(--blur-light);
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: var(--transition-smooth);
+    position: relative;
+    overflow: hidden;
+}
+
+.enhanced-card::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    background: linear-gradient(90deg,
+        hsl(var(--primary-hue), 83%, 71%),
+        hsl(var(--secondary-hue), 60%, 55%),
+        hsl(var(--accent-hue), 100%, 70%));
+    border-radius: inherit;
+    z-index: -1;
+    opacity: 0;
+    transition: var(--transition-smooth);
+}
+
+.enhanced-card:hover {
+    transform: translateY(-5px);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.enhanced-card:hover::before {
+    opacity: 0.15;
+}
+
+/* Button Styles */
+.btn-enhanced {
+    background: linear-gradient(135deg,
+        hsl(var(--primary-hue), 83%, 71%),
+        hsl(calc(var(--primary-hue) + 15), 83%, 71%));
+    border: none;
+    border-radius: 12px;
+    padding: 0.8em 1.5em;
+    color: white;
+    font-weight: 600;
+    position: relative;
+    overflow: hidden;
+    transition: var(--transition-bounce);
+    transform-origin: center;
+}
+
+.btn-enhanced::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    background: inherit;
+    filter: blur(12px);
+    opacity: 0;
+    transition: var(--transition-smooth);
+}
+
+.btn-enhanced:hover {
+    transform: scale(1.05);
+}
+
+.btn-enhanced:hover::before {
+    opacity: 0.5;
+}
+
+.btn-enhanced:active {
+    transform: scale(0.95);
+}
+
+/* Enhanced Input Fields */
+.input-enhanced {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 0.8em 1em;
+    color: white;
+    transition: var(--transition-smooth);
+}
+
+.input-enhanced:focus {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+    box-shadow: var(--depth-shadow);
+}
+
+/* Animation Classes */
+.hover-float {
+    transition: var(--transition-bounce);
+}
+
+.hover-float:hover {
+    transform: translateY(-5px);
+}
+
+.hover-glow {
+    transition: var(--transition-smooth);
+}
+
+.hover-glow:hover {
+    box-shadow: var(--glow-strength) hsla(var(--primary-hue), 83%, 71%, 0.3);
+}
+
+/* Enhanced Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg,
+        hsl(var(--primary-hue), 83%, 71%),
+        hsl(var(--secondary-hue), 60%, 55%));
+    border-radius: 4px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg,
+        hsl(var(--primary-hue), 83%, 81%),
+        hsl(var(--secondary-hue), 60%, 65%));
+    background-clip: padding-box;
+}
+
+/* Utility Animations */
+@keyframes gradient {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); opacity: 0.8; }
+    50% { transform: scale(1.05); opacity: 1; }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    :root {
+        --blur-light: blur(6px);
+        --blur-heavy: blur(15px);
+    }
+    
+    .enhanced-card {
+        border-radius: 16px;
+    }
+    
+    .btn-enhanced {
+        padding: 0.7em 1.2em;
+    }
+}

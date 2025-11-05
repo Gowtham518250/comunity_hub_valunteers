@@ -1,0 +1,468 @@
+{% extends "base.html" %}
+
+{% block title %}Sign Up - CommunityHub Pro{% endblock %}
+
+{% block extra_css %}
+<style>
+    .auth-container {
+        min-height: 80vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+    }
+
+    .auth-card {
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(25px);
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-radius: 30px;
+        padding: 4rem;
+        box-shadow: 
+            0 25px 50px rgba(0, 0, 0, 0.25),
+            inset 0 1px 0 rgba(255, 255, 255, 0.3),
+            0 0 50px rgba(255, 255, 255, 0.2);
+        max-width: 500px;
+        width: 100%;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .auth-card::before {
+        content: '';
+        position: absolute;
+        top: -2px;
+        left: -2px;
+        right: -2px;
+        bottom: -2px;
+        /* Use subtle dark overlay instead of bright multicolor gradient so the card matches the dark theme */
+        background: rgba(255, 255, 255, 0.02);
+        border-radius: 32px;
+        z-index: -1;
+        /* animation removed to disable rotating border */
+    }
+
+    .auth-header {
+        text-align: center;
+        margin-bottom: 3rem;
+    }
+
+    .auth-icon {
+        width: 100px;
+        height: 100px;
+        /* dark subtle icon background */
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 2rem;
+        font-size: 2.5rem;
+        color: var(--light);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+        /* animation removed to disable rotating icon */
+        position: relative;
+    }
+
+    .auth-icon::after {
+        content: '';
+        position: absolute;
+        width: 90px;
+        height: 90px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+        backdrop-filter: blur(10px);
+    }
+
+    .auth-title {
+        font-size: 2.5rem;
+        font-weight: 900;
+        margin-bottom: 1rem;
+        color: var(--light);
+    }
+
+    .auth-subtitle {
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 1.1rem;
+    }
+
+    .form-group {
+        margin-bottom: 2rem;
+        position: relative;
+    }
+
+    .form-label {
+        display: block;
+        margin-bottom: 0.75rem;
+        font-weight: 600;
+        color: rgba(255, 255, 255, 0.95);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .form-input {
+        width: 100%;
+        padding: 1.25rem 1.5rem;
+        background: rgba(255, 255, 255, 0.06);
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        border-radius: 15px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        font-family: inherit;
+        color: white;
+        backdrop-filter: blur(10px);
+    }
+
+    .form-input::placeholder {
+        color: rgba(255, 255, 255, 0.6);
+    }
+
+    .form-input:focus {
+        outline: none;
+        border-color: #6BCF7F;
+        background: rgba(255, 255, 255, 0.25);
+        box-shadow: 0 0 30px #6BCF7F;
+        transform: translateY(-2px);
+    }
+
+    .btn-auth {
+        width: 100%;
+        padding: 1.25rem;
+        /* subtle dark button to match theme */
+        background: linear-gradient(135deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+        color: var(--light);
+        border: none;
+        border-radius: 15px;
+        font-size: 1.1rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        border: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .btn-auth:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+        /* hover animation removed */
+    }
+
+    .auth-footer {
+        text-align: center;
+        margin-top: 2rem;
+        color: rgba(255, 255, 255, 0.8);
+    }
+
+    .auth-link {
+        color: #4D96FF;
+        text-decoration: none;
+        font-weight: 600;
+        transition: color 0.3s ease;
+    }
+
+    .auth-link:hover {
+        color: #6BCF7F;
+        text-decoration: underline;
+    }
+
+    .password-strength {
+        margin-top: 0.5rem;
+        font-size: 0.9rem;
+    }
+
+    .strength-bar {
+        height: 4px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 2px;
+        margin-top: 0.25rem;
+        overflow: hidden;
+    }
+
+    .strength-fill {
+        height: 100%;
+        border-radius: 2px;
+        transition: all 0.3s ease;
+    }
+
+    /* Removed rotating keyframes to keep theme static */
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .auth-card {
+            padding: 2rem;
+            margin: 1rem;
+        }
+        
+        .auth-title {
+            font-size: 2rem;
+        }
+        
+        .auth-icon {
+            width: 80px;
+            height: 80px;
+            font-size: 2rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="auth-header">
+            <div class="auth-icon">
+                <i class="fas fa-user-plus"></i>
+            </div>
+            <h1 class="auth-title">Join Our Community</h1>
+            <p class="auth-subtitle">Create your CommunityHub Pro account in seconds</p>
+        </div>
+
+        <form id="signupForm">
+            <div class="form-group">
+                <label class="form-label" for="username">
+                    <i class="fas fa-user"></i>
+                    Username
+                </label>
+                <input type="text" id="username" name="username" class="form-input" 
+                       placeholder="Choose a username" required minlength="3">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="email">
+                    <i class="fas fa-envelope"></i>
+                    Email Address
+                </label>
+                <input type="email" id="email" name="email" class="form-input" 
+                       placeholder="Enter your email" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="phone">
+                    <i class="fas fa-phone"></i>
+                    Phone Number
+                </label>
+                <input type="tel" id="phone" name="phone" class="form-input" 
+                       placeholder="Enter your phone number" required
+                       inputmode="tel" pattern="\+?\d{10,15}" title="Enter a valid phone number with at least 10 digits">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="password">
+                    <i class="fas fa-lock"></i>
+                    Password
+                </label>
+                <input type="password" id="password" name="password" class="form-input" 
+                       placeholder="Create a strong password" required minlength="6">
+                <div class="password-strength">
+                    <div id="strengthText" style="color: rgba(255,255,255,0.7); font-size: 0.9rem;">
+                        Password strength: None
+                    </div>
+                    <div class="strength-bar">
+                        <div id="strengthFill" class="strength-fill" style="width: 0%; background: #FF6B6B;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-auth">
+                <i class="fas fa-rocket"></i> Create My Account
+            </button>
+        </form>
+
+        <div class="auth-footer">
+            <p>Already have an account? <a href="/login" class="auth-link">Sign in here</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    class SignupManager {
+        constructor() {
+            this.form = document.getElementById('signupForm');
+            this.passwordInput = document.getElementById('password');
+            this.strengthText = document.getElementById('strengthText');
+            this.strengthFill = document.getElementById('strengthFill');
+            this.init();
+        }
+
+        init() {
+            this.setupEventListeners();
+        }
+
+        setupEventListeners() {
+            this.form.addEventListener('submit', this.handleSignup.bind(this));
+            this.passwordInput.addEventListener('input', this.checkPasswordStrength.bind(this));
+            
+            // Add input animations
+            const inputs = this.form.querySelectorAll('.form-input');
+            inputs.forEach(input => {
+                input.addEventListener('focus', () => {
+                    input.parentElement.style.transform = 'scale(1.02)';
+                });
+                
+                input.addEventListener('blur', () => {
+                    input.parentElement.style.transform = 'scale(1)';
+                });
+            });
+        }
+
+        checkPasswordStrength() {
+            const password = this.passwordInput.value;
+            let strength = 0;
+            let feedback = '';
+
+            // Length check
+            if (password.length >= 6) strength += 25;
+            if (password.length >= 8) strength += 25;
+
+            // Complexity checks
+            if (/[A-Z]/.test(password)) strength += 15;
+            if (/[a-z]/.test(password)) strength += 15;
+            if (/[0-9]/.test(password)) strength += 10;
+            if (/[^A-Za-z0-9]/.test(password)) strength += 10;
+
+            // Update UI
+            this.strengthFill.style.width = `${strength}%`;
+            
+            if (strength < 40) {
+                this.strengthFill.style.background = '#FF6B6B';
+                feedback = 'Weak';
+            } else if (strength < 70) {
+                this.strengthFill.style.background = '#FFA500';
+                feedback = 'Medium';
+            } else if (strength < 90) {
+                this.strengthFill.style.background = '#FFD93D';
+                feedback = 'Strong';
+            } else {
+                this.strengthFill.style.background = '#6BCF7F';
+                feedback = 'Very Strong';
+            }
+
+            this.strengthText.textContent = `Password strength: ${feedback}`;
+        }
+
+            async handleSignup(event) {
+            event.preventDefault();
+            
+            const formData = new FormData(this.form);
+            const submitBtn = this.form.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            
+            // Validate password strength
+            if (this.passwordInput.value.length < 6) {
+                this.showNotification('❌ Password must be at least 6 characters long', 'error');
+                return;
+            }
+
+            // Validate phone number (at least 10 digits)
+            const phone = (new FormData(this.form)).get('phone') || '';
+            const digits = (phone.match(/\d/g) || []).length;
+            if (digits < 10) {
+                this.showNotification('❌ Please enter a valid phone number with at least 10 digits', 'error');
+                return;
+            }
+            
+            // Show loading state
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating Account...';
+            submitBtn.disabled = true;
+            
+            try {
+                const response = await fetch('/signup', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams(formData)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    this.showNotification('🎉 Account created successfully! Welcome to CommunityHub Pro!', 'success');
+                    setTimeout(() => {
+                        window.location.href = '/dashboard';
+                    }, 2000);
+                } else {
+                    throw new Error(data.message || 'Signup failed');
+                }
+            } catch (error) {
+                this.showNotification(`❌ ${error.message}`, 'error');
+            } finally {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }
+        }
+
+        showNotification(message, type = 'info') {
+            // Remove existing notifications
+            const existingNotifications = document.querySelectorAll('.notification');
+            existingNotifications.forEach(notification => notification.remove());
+
+            const notification = document.createElement('div');
+            notification.className = `notification notification-${type}`;
+            notification.style.cssText = `
+                position: fixed;
+                top: 100px;
+                right: 20px;
+                padding: 1.5rem 2rem;
+                border-radius: 15px;
+                background: ${type === 'success' ? 'linear-gradient(135deg, #6BCF7F, #4D96FF)' : 
+                              type === 'error' ? 'linear-gradient(135deg, #FF6B6B, #FFA500)' : 
+                              'linear-gradient(135deg, #4D96FF, #9D4EDD)'};
+                color: white;
+                font-weight: 600;
+                z-index: 10000;
+                box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+                backdrop-filter: blur(20px);
+                border: 1px solid rgba(255, 255, 255, 0.3);
+                animation: slideIn 0.5s ease;
+            `;
+            
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                if (notification.parentElement) {
+                    notification.style.animation = 'slideOut 0.5s ease forwards';
+                    setTimeout(() => notification.remove(), 500);
+                }
+            }, 4000);
+        }
+    }
+
+    // Add CSS for notifications
+    const notificationStyles = document.createElement('style');
+    notificationStyles.textContent = `
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes slideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
+    `;
+    document.head.appendChild(notificationStyles);
+
+    // Initialize signup manager
+    document.addEventListener('DOMContentLoaded', () => {
+        new SignupManager();
+    });
+</script>
+{% endblock %}

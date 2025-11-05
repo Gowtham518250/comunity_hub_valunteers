@@ -1,0 +1,784 @@
+{% extends "base.html" %}
+
+{% block title %}Analytics - CommunityHub Pro{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<style>
+    .analytics-header {
+        text-align: center;
+        margin-bottom: 3rem;
+        padding: 2rem;
+    }
+
+    .analytics-title {
+        font-size: 3rem;
+        font-weight: 900;
+        margin-bottom: 1rem;
+        background: linear-gradient(135deg, #FF6B6B, #FFA500, #FFD93D, #6BCF7F, #4D96FF, #9D4EDD);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .analytics-subtitle {
+        font-size: 1.3rem;
+        color: rgba(255, 255, 255, 0.9);
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 3rem;
+    }
+
+    .stat-card {
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 20px;
+        padding: 2rem;
+        text-align: center;
+        transition: transform 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+        transition: left 0.6s ease;
+    }
+
+    .stat-card:hover::before {
+        left: 100%;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-10px);
+    }
+
+    .stat-icon {
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1rem;
+        font-size: 1.8rem;
+        color: white;
+    }
+
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: 800;
+        margin-bottom: 0.5rem;
+        color: white;
+    }
+
+    .stat-label {
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 1rem;
+        font-weight: 600;
+    }
+
+    .charts-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+        gap: 2rem;
+        margin-bottom: 3rem;
+    }
+
+    .chart-card {
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 20px;
+        padding: 2rem;
+    }
+
+    .chart-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+    }
+
+    .chart-title {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: white;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .chart-container {
+        height: 300px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: rgba(255, 255, 255, 0.7);
+    }
+
+    /* Advanced Map Styles */
+    .map-container {
+        height: 500px;
+        border-radius: 20px;
+        overflow: hidden;
+        position: relative;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        margin-bottom: 2rem;
+    }
+
+    #complaintsMap {
+        height: 100%;
+        width: 100%;
+        border-radius: 20px;
+    }
+
+    .map-controls {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        z-index: 1000;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        border-radius: 15px;
+        padding: 1rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        min-width: 200px;
+    }
+
+    .map-filter-group {
+        margin-bottom: 1rem;
+    }
+
+    .map-filter-group:last-child {
+        margin-bottom: 0;
+    }
+
+    .map-filter-label {
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: #333;
+        font-size: 0.9rem;
+    }
+
+    .map-filter-select {
+        width: 100%;
+        padding: 0.5rem;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+        background: white;
+        font-size: 0.9rem;
+    }
+
+    .heatmap-toggle {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-top: 0.5rem;
+    }
+
+    .heatmap-toggle input {
+        margin: 0;
+    }
+
+    .heatmap-toggle-label {
+        font-size: 0.9rem;
+        color: #333;
+    }
+
+    .map-stats-overlay {
+        position: absolute;
+        bottom: 20px;
+        left: 20px;
+        z-index: 1000;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        border-radius: 15px;
+        padding: 1.5rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        min-width: 250px;
+    }
+
+    .map-stat-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.75rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    }
+
+    .map-stat-item:last-child {
+        margin-bottom: 0;
+        padding-bottom: 0;
+        border-bottom: none;
+    }
+
+    .map-stat-label {
+        font-weight: 600;
+        color: #333;
+        font-size: 0.9rem;
+    }
+
+    .map-stat-value {
+        font-weight: 700;
+        color: #4D96FF;
+        font-size: 1rem;
+    }
+
+    /* Cluster Map Styles */
+    .cluster-map-legend {
+        background: rgba(255, 255, 255, 0.95);
+        padding: 1rem;
+        border-radius: 10px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .legend-color {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        border: 2px solid white;
+    }
+
+    .legend-label {
+        font-size: 0.9rem;
+        color: #333;
+    }
+
+    /* Timeline Visualization */
+    .timeline-container {
+        height: 300px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 15px;
+        padding: 1rem;
+        margin-top: 1rem;
+    }
+
+    .timeline-chart {
+        width: 100%;
+        height: 100%;
+    }
+
+    .distribution-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+
+    .distribution-item {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+    }
+
+    .distribution-color {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+    }
+
+    .distribution-info {
+        flex: 1;
+    }
+
+    .distribution-name {
+        font-weight: 600;
+        color: white;
+        font-size: 0.9rem;
+    }
+
+    .distribution-count {
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 0.8rem;
+    }
+
+    .distribution-percentage {
+        font-weight: 700;
+        color: white;
+    }
+
+    .ai-insights {
+        margin-top: 3rem;
+    }
+
+    .insights-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .insight-card {
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 20px;
+        padding: 2rem;
+        transition: transform 0.3s ease;
+    }
+
+    .insight-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .insight-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .insight-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: white;
+    }
+
+    .insight-title {
+        font-weight: 700;
+        color: white;
+        font-size: 1.1rem;
+    }
+
+    .insight-message {
+        color: rgba(255, 255, 255, 0.8);
+        line-height: 1.5;
+    }
+
+    .trend-indicator {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 0.25rem 0.5rem;
+        border-radius: 15px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        margin-left: 0.5rem;
+    }
+
+    .trend-up {
+        background: rgba(34, 197, 94, 0.2);
+        color: #22c55e;
+    }
+
+    .trend-down {
+        background: rgba(239, 68, 68, 0.2);
+        color: #ef4444;
+    }
+
+    .trend-neutral {
+        background: rgba(156, 163, 175, 0.2);
+        color: #9ca3af;
+    }
+
+    /* Simple chart bars for distribution */
+    .chart-bar {
+        height: 20px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 10px;
+        margin: 0.5rem 0;
+        overflow: hidden;
+    }
+
+    .chart-fill {
+        height: 100%;
+        border-radius: 10px;
+        transition: width 1s ease-in-out;
+    }
+
+    /* Hotspot Indicators */
+    .hotspot-indicator {
+        position: relative;
+        display: inline-block;
+    }
+
+    .hotspot-pulse {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: #FF6B6B;
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0% {
+            transform: scale(0.8);
+            opacity: 1;
+        }
+        70% {
+            transform: scale(2);
+            opacity: 0;
+        }
+        100% {
+            transform: scale(0.8);
+            opacity: 0;
+        }
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .analytics-title {
+            font-size: 2rem;
+        }
+        
+        .charts-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .stats-grid {
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        }
+        
+        .insights-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .map-container {
+            height: 400px;
+        }
+
+        .map-controls {
+            position: relative;
+            top: auto;
+            right: auto;
+            margin-bottom: 1rem;
+        }
+
+        .map-stats-overlay {
+            position: relative;
+            bottom: auto;
+            left: auto;
+            margin-top: 1rem;
+        }
+    }
+
+    /* Leaflet Customization */
+    :root {
+        --cluster-1: #FF6B6B;
+        --cluster-2: #FFA500;
+        --cluster-3: #FFD93D;
+        --cluster-4: #6BCF7F;
+        --cluster-5: #4D96FF;
+    }
+
+    .leaflet-container {
+        background: rgba(40, 40, 40, 0.95) !important;
+    }
+
+    .leaflet-popup-content-wrapper {
+        background: rgba(255, 255, 255, 0.95) !important;
+        backdrop-filter: blur(20px) !important;
+        border-radius: 15px !important;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3) !important;
+    }
+
+    .leaflet-popup-tip {
+        background: rgba(255, 255, 255, 0.95) !important;
+    }
+
+    .complaint-popup {
+        min-width: 250px;
+    }
+
+    .popup-header {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    }
+
+    .popup-status {
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: white;
+    }
+
+    .popup-title {
+        font-weight: 700;
+        color: #333;
+        margin-bottom: 0.5rem;
+    }
+
+    .popup-details {
+        color: #666;
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .popup-meta {
+        display: flex;
+        justify-content: space-between;
+        color: #888;
+        font-size: 0.8rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="analytics-header">
+    <h1 class="analytics-title">Community Analytics Dashboard 🌍</h1>
+    <p class="analytics-subtitle">Advanced visualizations and real-time insights for your community management</p>
+</div>
+
+<!-- Interactive Map Section -->
+<div class="chart-card">
+    <div class="chart-header">
+        <h3 class="chart-title">
+            <i class="fas fa-map-marked-alt"></i>
+            Live Complaint Heatmap & Distribution
+        </h3>
+        <div class="hotspot-indicator">
+            <span>Live Updates</span>
+            <div class="hotspot-pulse"></div>
+        </div>
+    </div>
+    
+    <div class="map-container">
+        <div id="complaintsMap"></div>
+        
+        <!-- Map Controls -->
+        <div class="map-controls">
+            <div class="map-filter-group">
+                <div class="map-filter-label">Filter by Category</div>
+                <select class="map-filter-select" id="categoryFilter">
+                    <option value="all">All Categories</option>
+                    {% for key, category in categories.items() %}
+                    <option value="{{ key }}">{{ category.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="map-filter-group">
+                <div class="map-filter-label">Filter by Status</div>
+                <select class="map-filter-select" id="statusFilter">
+                    <option value="all">All Statuses</option>
+                    {% for key, status in status_types.items() %}
+                    <option value="{{ key }}">{{ status.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="map-filter-group">
+                <div class="map-filter-label">Time Range</div>
+                <select class="map-filter-select" id="timeFilter">
+                    <option value="all">All Time</option>
+                    <option value="today">Today</option>
+                    <option value="week">This Week</option>
+                    <option value="month">This Month</option>
+                </select>
+            </div>
+
+            <div class="heatmap-toggle">
+                <input type="checkbox" id="heatmapToggle" checked>
+                <label class="heatmap-toggle-label" for="heatmapToggle">Show Heatmap</label>
+            </div>
+        </div>
+
+        <!-- Map Stats Overlay -->
+        <div class="map-stats-overlay">
+            <div class="map-stat-item">
+                <span class="map-stat-label">Total Complaints</span>
+                <span class="map-stat-value" id="mapTotalComplaints">{{ analytics.total_complaints }}</span>
+            </div>
+            <div class="map-stat-item">
+                <span class="map-stat-label">Active Clusters</span>
+                <span class="map-stat-value" id="mapClusters">0</span>
+            </div>
+            <div class="map-stat-item">
+                <span class="map-stat-label">High Density Areas</span>
+                <span class="map-stat-value" id="mapHotspots">0</span>
+            </div>
+            <div class="map-stat-item">
+                <span class="map-stat-label">Avg. Response Time</span>
+                <span class="map-stat-value" id="mapAvgResponse">24h</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Timeline Visualization -->
+<div class="chart-card">
+    <div class="chart-header">
+        <h3 class="chart-title">
+            <i class="fas fa-chart-line"></i>
+            Complaint Timeline & Trends
+        </h3>
+        <select class="map-filter-select" id="timelineFilter" style="width: auto;">
+            <option value="weekly">Weekly View</option>
+            <option value="monthly">Monthly View</option>
+            <option value="quarterly">Quarterly View</option>
+        </select>
+    </div>
+    <div class="timeline-container">
+        <canvas class="timeline-chart" id="timelineChart"></canvas>
+    </div>
+</div>
+
+<!-- AI Insights -->
+{% if analytics.ai_insights %}
+<div class="ai-insights">
+    <div class="chart-card">
+        <div class="chart-header">
+            <h3 class="chart-title">
+                <i class="fas fa-robot"></i>
+                AI-Powered Insights & Predictions
+            </h3>
+        </div>
+        
+        <div class="insights-grid">
+            {% for insight in analytics.ai_insights %}
+            <div class="insight-card">
+                <div class="insight-header">
+                    <div class="insight-icon" style="background: {% if insight.type == 'success' %}linear-gradient(135deg, #6BCF7F, #4D96FF){% elif insight.type == 'warning' %}linear-gradient(135deg, #FFA500, #FF6B6B){% else %}linear-gradient(135deg, #4D96FF, #9D4EDD){% endif %};">
+                        {{ insight.icon }}
+                    </div>
+                    <div class="insight-title">{{ insight.title }}</div>
+                </div>
+                <div class="insight-message">{{ insight.message }}</div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Performance Score -->
+<div class="chart-card" style="margin-top: 2rem;">
+    <div class="chart-header">
+        <h3 class="chart-title">
+            <i class="fas fa-trophy"></i>
+            Community Performance Score
+        </h3>
+        <div class="performance-score" style="
+            background: linear-gradient(135deg, #4D96FF, #9D4EDD);
+            color: white;
+            padding: 0.5rem 1.5rem;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 1.2rem;
+        ">
+            {{ analytics.performance_score }}/100
+        </div>
+    </div>
+    <div class="chart-container">
+        <div style="text-align: center; width: 100%;">
+            <div style="
+                width: 200px;
+                height: 200px;
+                border-radius: 50%;
+                background: conic-gradient(
+                    #6BCF7F 0% {{ analytics.performance_score * 3.6 }}deg,
+                    rgba(255, 255, 255, 0.2) {{ analytics.performance_score * 3.6 }}deg 360deg
+                );
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin: 0 auto;
+                position: relative;
+            ">
+                <div style="
+                    width: 160px;
+                    height: 160px;
+                    background: rgba(255, 255, 255, 0.15);
+                    border-radius: 50%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 2.5rem;
+                    font-weight: 800;
+                    color: white;
+                ">
+                    {{ analytics.performance_score }}
+                </div>
+            </div>
+            <div style="margin-top: 1rem; color: rgba(255, 255, 255, 0.8);">
+                Overall community management performance
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Mini Trend Chart: compact summary sparkline for recent complaints -->
+<div class="chart-card" style="margin-top: 1rem; max-width: 420px;">
+    <div class="chart-header">
+        <h3 class="chart-title">
+            <i class="fas fa-chart-area"></i>
+            Recent Complaints (7d)
+        </h3>
+    </div>
+    <div class="chart-container" style="height: 140px;">
+        <canvas id="miniTrendChart" style="width:100%; height:100%;"></canvas>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+    <script src="{{ url_for('static', path='js/analytics.js') }}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            if (window.analytics) {
+                try {
+                    window.analytics.initializeMap('complaintsMap');
+
+                    const initialPayload = {
+                        total_complaints: {{ analytics.total_complaints | default(0) }},
+                        resolved_complaints: {{ analytics.resolved_complaints | default(0) }},
+                        pending_complaints: {{ analytics.pending_complaints | default(0) }},
+                        urgent_complaints: {{ analytics.urgent_complaints | default(0) }},
+                        resolution_rate: {{ analytics.resolution_rate | default(0) }},
+                        total_users: {{ analytics.total_users | default(0) }},
+                        performance_score: {{ analytics.performance_score | default(0) }},
+                        heatmap: {{ analytics.get('hotspots', []) | tojson }},
+                        markers: [],
+                        categories: {{ analytics.category_distribution | tojson }},
+                        trend: { labels: {{ analytics.monthly_trend.keys() | list | tojson }}, values: {{ analytics.monthly_trend.values() | list | tojson }} }
+                    };
+
+                    window.analytics.updateAnalytics(initialPayload);
+
+                    if (document.getElementById('timelineChart') && window.analytics.createTrendChart) {
+                        window.analytics.createTrendChart('timelineChart', initialPayload.trend);
+                    }
+                    if (document.getElementById('categoryChart') && window.analytics.createCategoryChart) {
+                        window.analytics.createCategoryChart('categoryChart', initialPayload.categories);
+                    }
+                } catch (err) {
+                    console.warn('Analytics initialization error:', err);
+                }
+            }
+        });
+    </script>
+{% endblock %}

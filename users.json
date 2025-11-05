@@ -1,0 +1,15 @@
+{
+  "admin": {
+    "username": "admin",
+    "email": "admin@communityhub.ai",
+    "phone": "+91-9876543210",
+    "hashed_password": "240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9",
+    "joined_date": "2025-11-05T11:52:15.164845",
+    "role": "admin",
+    "preferences": {
+      "notifications": true,
+      "email_alerts": true,
+      "sms_alerts": true
+    }
+  }
+}
